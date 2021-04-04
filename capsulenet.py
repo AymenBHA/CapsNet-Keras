@@ -106,6 +106,8 @@ def train(model,  # type: models.Model
 
     # callbacks
     log = callbacks.CSVLogger(args.save_dir + '/log.csv')
+    tb = callbacks.TensorBoard(log_dir=args.save_dir + '/tensorboard-logs',
+                               batch_size=args.batch_size, histogram_freq=args.debug)
     checkpoint = callbacks.ModelCheckpoint(args.save_dir + '/weights-{epoch:02d}.h5', monitor='val_capsnet_acc',
                                            save_best_only=True, save_weights_only=True, verbose=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
@@ -136,7 +138,7 @@ def train(model,  # type: models.Model
               steps_per_epoch=int(y_train.shape[0] / args.batch_size),
               epochs=args.epochs,
               validation_data=((x_test, y_test), (y_test, x_test)), batch_size=args.batch_size,
-              callbacks=[log, checkpoint, lr_decay])
+              callbacks=[log, checkpoint,tb, lr_decay])
     # End: Training with data augmentation -----------------------------------------------------------------------#
 
     model.save_weights(args.save_dir + '/trained_model.h5')
